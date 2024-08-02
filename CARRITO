@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title><?php echo TITLE . '/    ' . $data['title']; ?></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" type="image/x-icon" href="<?php echo BASE_URL; ?>assets/img/logoicon.png">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/templatemo.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/custom.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;200;300;400;500;700;900&display=swap">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/fontawesome.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo BASE_URL; ?>assets/css/slick.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo BASE_URL; ?>assets/css/slick-theme.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=<?php echo CLIENTE_ID ?>&currency=<?php echo MONEDA ?>"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand text-success logo h1 align-self-center" href="<?php echo BASE_URL ?>">
+                iPhoneShop
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <div class="flex-fill">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo BASE_URL ?>">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo BASE_URL . 'principal/about' ?>">Nosotros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo BASE_URL . 'principal/shop' ?>">Tienda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo BASE_URL . 'principal/contact' ?>">Sucursales</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="navbar align-self-center d-flex">
+                    <div class="d-lg-none flex-sm-fill mt-3 mb-4 col-7 col-sm-auto pr-3"></div>
+                    <?php if (!empty($_SESSION['correoCliente'])) { ?>
+                        <a class="nav-icon position-relative text-decoration-none" href="#" id="verCarrito" data-bs-toggle="modal" data-bs-target="#carritoModal">
+                            <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
+                            <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark" id="btnCantidadCarrito">0</span>
+                        </a>
+
+                        <a class="nav-icon position-relative text-decoration-none" href="<?php echo BASE_URL . 'clientes' ?>">
+                            <i class="fa fa-fw fa-user text-dark mr-3"></i>
+                        </a>
+                    <?php } else { ?>
+                        <a class="nav-icon position-relative text-decoration-none" href="#" data-bs-toggle="modal" data-bs-target="#modalLogin">
+                            <i class="fa fa-fw fa-user text-dark mr-3"></i>
+                        </a>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- Modal for Carrito -->
+    <div class="modal fade bg-white" id="carritoModal" tabindex="-1" role="dialog" aria-labelledby="carritoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="carritoModalLabel">Carrito de Compras</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabla del carrito de compras -->
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID Carrito</th>
+                                <th>ID Variante</th>
+                                <th>Cantidad</th>
+                                <th>ID Persona</th>
+                                <th>ID Sucursal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carritoTableBody">
+                            <!-- Los datos se llenarán aquí mediante JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Login -->
+    <div class="modal fade" id="modalLogin" tabindex="-1" role="dialog" aria-labelledby="modalLoginLabel" aria-hidden="true">
+        <!-- Aquí va el contenido del modal de login -->
+    </div>
+
+    <script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('verCarrito').addEventListener('click', function() {
+        fetchCarritoData();
+    });
+});
+
+function fetchCarritoData() {
+    fetch('<?php echo BASE_URL; ?>fetchCarrito.php?action=fetchCarrito') // Asegúrate de que la ruta sea correcta
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text(); // Leer como texto primero
+        })
+        .then(text => {
+            try {
+                const data = JSON.parse(text); // Intentar parsear como JSON
+                const tableBody = document.getElementById('carritoTableBody');
+                tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.idcarrito}</td>
+                        <td>${item.idvariante}</td>
+                        <td>${item.cantidadvariante}</td>
+                        <td>${item.idpersona}</td>
+                        <td>${item.idsucursal}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al parsear JSON:', error);
+                console.error('Respuesta del servidor:', text); // Mostrar la respuesta en caso de error
+            }
+        })
+        .catch(error => console.error('Error al cargar los datos del carrito:', error));
+}
+    </script>
+
+    <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
+    if (isset($_GET['action']) && $_GET['action'] === 'fetchCarrito') {
+        header('Content-Type: application/json');
+
+        // Establece la conexión con la base de datos
+        $conn = new mysqli('localhost', 'usuario', 'contraseña', 'nombre_base_de_datos');
+
+        // Verifica la conexión
+        if ($conn->connect_error) {
+            die("Conexión fallida: " . $conn->connect_error);
+        }
+
+        // Obtiene el ID de la persona (ajustar según cómo se maneje la sesión)
+        session_start(); // Asegúrate de iniciar la sesión si no lo has hecho
+        $idPersona = $_SESSION['idPersona'] ?? 0; // Usa un valor por defecto si no está definido
+
+        // Consulta los datos del carrito
+        $sql = "SELECT idcarrito, idvariante, cantidadvariante, idpersona, idsucursal FROM carritodecompras WHERE idpersona = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('i', $idPersona);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $carrito = array();
+        while ($row = $result->fetch_assoc()) {
+            $carrito[] = $row;
+        }
+
+        $stmt->close();
+        $conn->close();
+
+        echo json_encode($carrito);
+        exit;
+    }
+    ?>
+
+</body>
+</html>
